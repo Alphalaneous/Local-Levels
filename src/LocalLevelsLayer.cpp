@@ -446,7 +446,7 @@ void LocalLevelsLayer::setPathLabel() {
 
 void LocalLevelsLayer::setTextPopupClosed(SetTextPopup* popup, gd::string text) {
     if (popup->getTag() == 1) {
-        auto newPath = m_path / text;
+        auto newPath = m_path / std::string(text);
 
         if (utils::string::trim(text).empty()) {
             createQuickPopup("Error", fmt::format("A folder must have a name."), "OK", nullptr, nullptr);
@@ -470,7 +470,7 @@ void LocalLevelsLayer::setTextPopupClosed(SetTextPopup* popup, gd::string text) 
         }
     }
     else if (popup->getTag() == 2) {
-        auto newPath = m_path.parent_path() / text;
+        auto newPath = m_path.parent_path() / std::string(text);
 
         if (utils::string::trim(text).empty()) {
             createQuickPopup("Error", fmt::format("A folder must have a name."), "OK", nullptr, nullptr);
