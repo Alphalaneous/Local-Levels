@@ -18,6 +18,7 @@ public:
     void deleteFile();
 
     void checkMoveAllowed();
+    MyGJGameLevel* getLevel();
 
     const std::filesystem::path& getPath();
 

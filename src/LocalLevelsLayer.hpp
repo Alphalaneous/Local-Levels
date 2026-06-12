@@ -1,10 +1,7 @@
 #pragma once
 
-#include "Geode/cocos/label_nodes/CCLabelBMFont.h"
 #include "LocalLevelCell.hpp"
 #include <Geode/Geode.hpp>
-#include <unordered_map>
-#include <vector>
 
 using namespace geode::prelude;
 

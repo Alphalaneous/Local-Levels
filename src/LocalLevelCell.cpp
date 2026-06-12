@@ -1,14 +1,8 @@
 #include "LocalLevelCell.hpp"
 #include "GJGameLevel.hpp"
-#include <filesystem>
 #include <hjfod.gmd-api/include/GMD.hpp>
-#include "Geode/cocos/sprite_nodes/CCSprite.h"
-#include "Geode/ui/Popup.hpp"
-#include "Geode/utils/cocos.hpp"
 #include "LocalLevelsLayer.hpp"
 #include "Utils.hpp"
-#include <Geode/ui/Button.hpp>
-#include <system_error>
 
 LocalLevelCell* LocalLevelCell::create(const std::filesystem::path& path, LocalLevelsLayer* levelsLayer) {
     auto ret = new LocalLevelCell();
@@ -220,4 +214,8 @@ bool LocalLevelCell::init(const std::filesystem::path& path, LocalLevelsLayer* l
     }
 
     return true;
+}
+
+MyGJGameLevel* LocalLevelCell::getLevel() {
+    return m_level;
 }

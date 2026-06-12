@@ -1,10 +1,6 @@
 #include "EditLevelLayer.hpp"
 #include "GJGameLevel.hpp"
-#include "Geode/ui/Popup.hpp"
-#include "Geode/utils/cocos.hpp"
 #include "LocalLevelsLayer.hpp"
-#include <Geode/binding/EditLevelLayer.hpp>
-#include <Geode/binding/GJGameLevel.hpp>
 #include <hjfod.gmd-api/include/GMD.hpp>
 #include <Geode/utils/base64.hpp>
 #include "Utils.hpp"
@@ -156,6 +152,10 @@ bool MyEditLevelLayer::init(GJGameLevel* level) {
                         auto scene = CCScene::create();
                         scene->addChild(editLevelLayer);
 
+                        LocalLevelManager::get()->save();
+                        
+                        CCDirector::get()->popScene();
+
                         auto trans = CCTransitionFade::create(0.5f, scene);
                         CCDirector::get()->replaceScene(trans);
                     }
@@ -181,6 +181,8 @@ bool MyEditLevelLayer::init(GJGameLevel* level) {
 
                         auto scene = CCScene::create();
                         scene->addChild(editLevelLayer);
+
+                        LocalLevelManager::get()->save();
 
                         auto trans = CCTransitionFade::create(0.5f, scene);
                         CCDirector::get()->replaceScene(trans);

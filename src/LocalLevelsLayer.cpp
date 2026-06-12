@@ -1,16 +1,10 @@
 #include "LocalLevelsLayer.hpp"
 #include "GJGameLevel.hpp"
-#include "Geode/ui/ScrollLayer.hpp"
-#include "Geode/ui/SimpleAxisLayout.hpp"
-#include "Geode/utils/cocos.hpp"
-#include "Geode/utils/string.hpp"
 #include "LocalLevelCell.hpp"
-#include <filesystem>
 #include <hjfod.gmd-api/include/GMD.hpp>
 #include "SortState.hpp"
 #include "Utils.hpp"
 #include <Geode/ui/Button.hpp>
-#include <vector>
 #define FTS_FUZZY_MATCH_IMPLEMENTATION
 #include <Geode/external/fts/fts_fuzzy_match.h>
 
@@ -302,6 +296,55 @@ bool LocalLevelsLayer::init(const std::filesystem::path& path) {
 
     addChild(deleteBtn);
 
+    auto transferButton = geode::Button::createWithSprite("transfer.png"_spr, [this] (auto sender) {
+        int selCount = 0;
+        int folderCount = 0;
+        for (auto child : m_scrollLayer->m_contentLayer->getChildrenExt<LocalLevelCell>()) {
+            if (child->isSelected()) {
+                selCount++;
+                if (child->isFolder()) {
+                    folderCount++;
+                }
+            }
+        }
+
+        if (selCount == 0) {
+            createQuickPopup("Nothing here...", "No levels selected.", "OK", nullptr, nullptr);
+        }
+        else if (folderCount > 1) {
+            createQuickPopup("Oops!", "Cannot transfer any folders to your save. Please only select levels.", "OK", nullptr, nullptr);
+        }
+        else {
+            auto alert = createQuickPopup("Transfer", fmt::format("Are you sure you want to <cr>transfer</c> the <cy>{}</c> selected <cg>levels</c> to your save?", selCount), "Back", "Transfer", [this] (auto alert, bool selected) {
+                if (selected) {
+                    for (auto child : m_scrollLayer->m_contentLayer->getChildrenExt<LocalLevelCell>()) {
+                        auto level = child->getLevel();
+                        if (child->isSelected()) {
+                            level->setLocal(false);
+                            std::error_code err;
+                            std::filesystem::remove_all(level->getFilePath(), err);
+
+                            LocalLevelManager::get()->m_localLevels->insertObject(level, 0);
+                        }
+                    }
+                    LocalLevelManager::get()->save();
+
+                    auto y = m_scrollLayer->m_contentLayer->getPositionY();
+                    loadLevelsForPath(m_path);
+                    m_scrollLayer->m_contentLayer->setPositionY(y);
+                }
+            });
+
+            alert->m_button2->updateBGImage("GJ_button_06.png");
+        }
+    });
+
+    transferButton->setScale(0.4f);
+
+    transferButton->setPosition({winSize.width / 2 + listLayer->getContentWidth() / 2 - transferButton->getScaledContentWidth() / 2 - 25.f, winSize.height / 2 - 122});
+
+    addChild(transferButton);
+
     auto allLabel = CCLabelBMFont::create("All", "bigFont.fnt");
     allLabel->setScale(0.4f);
 
@@ -497,7 +540,11 @@ void LocalLevelsLayer::setTextPopupClosed(SetTextPopup* popup, gd::string text) 
 
 void LocalLevelsLayer::keyBackClicked() {
     CCLayer::keyBackClicked();
-    CCDirector::get()->popSceneWithTransition(0.5f, cocos2d::kPopTransitionFade);
+    CCDirector::get()->popScene();
+    auto scene = LevelBrowserLayer::scene(GJSearchObject::create(SearchType::MyLevels));
+    auto trans = CCTransitionFade::create(0.5f, scene);
+
+    CCDirector::get()->replaceScene(trans);
 }
 
 void LocalLevelsLayer::loadLevelsForPath(const std::filesystem::path& path) {
