@@ -345,6 +345,71 @@ bool LocalLevelsLayer::init(const std::filesystem::path& path) {
 
     addChild(transferButton);
 
+    if (!isRoot) {
+        auto moveOutButton = geode::Button::createWithSpriteFrameName("gj_folderBtn_001.png", [this] (auto sender) {
+            int selCount = 0;
+            int folderCount = 0;
+            for (auto child : m_scrollLayer->m_contentLayer->getChildrenExt<LocalLevelCell>()) {
+                if (child->isSelected()) {
+                    selCount++;
+                    if (child->isFolder()) {
+                        folderCount++;
+                    }
+                }
+            }
+            if (selCount == 0) {
+                createQuickPopup("Nothing here...", "No levels or folders selected.", "OK", nullptr, nullptr);
+            }
+            else {
+                int levelCount = selCount - folderCount;
+
+                std::string desc;
+                if (folderCount != 0 && levelCount == 0) {
+                    desc = fmt::format("Are you sure you want to <cb>move</c> the <cy>{}</c> selected <cg>folders</c> out of this folder?", folderCount);
+                }
+                else if (levelCount != 0 && folderCount == 0) {
+                    desc = fmt::format("Are you sure you want to <cb>move</c> the <cy>{}</c> selected <cg>levels</c> out of this folder?", levelCount);
+                }
+                else {
+                    desc = fmt::format("Are you sure you want to <cb>move</c> the <cy>{}</c> selected <cg>levels</c> and <cy>{}</c> selected <cg>folders</c> out of this folder?", levelCount, folderCount);
+                }
+
+                auto alert = createQuickPopup("Move", desc.c_str(), "Back", "Move", [this] (auto alert, bool selected) {
+                    if (selected) {
+                        for (auto child : m_scrollLayer->m_contentLayer->getChildrenExt<LocalLevelCell>()) {
+                            if (child->isSelected()) {
+                                std::error_code err;
+
+                                auto destination = m_path.parent_path() / child->getPath().filename();
+                                auto checkedDest = local_levels::utils::getNextAvailableName(destination);
+
+                                std::filesystem::rename(child->getPath(), checkedDest, err);
+                            }
+                        }
+
+                        auto y = m_scrollLayer->m_contentLayer->getPositionY();
+                        loadLevelsForPath(m_path);
+                        m_scrollLayer->m_contentLayer->setPositionY(y);
+                    }
+                });
+
+                alert->m_button2->updateBGImage("GJ_button_03.png");
+            }
+        });
+
+        moveOutButton->setScale(0.4f);
+
+        moveOutButton->setPosition({winSize.width / 2 + listLayer->getContentWidth() / 2 - moveOutButton->getScaledContentWidth() / 2 - 51.3f, winSize.height / 2 - 122});
+
+        auto arrowMoveSpr = CCSprite::createWithSpriteFrameName("GJ_arrow_02_001.png");
+        arrowMoveSpr->setPosition({2.f, moveOutButton->getContentHeight() / 2});
+        arrowMoveSpr->setScale(0.4f);
+
+        moveOutButton->addChild(arrowMoveSpr);
+
+        addChild(moveOutButton);
+    }
+
     auto allLabel = CCLabelBMFont::create("All", "bigFont.fnt");
     allLabel->setScale(0.4f);
 
