@@ -63,6 +63,7 @@ void MyEditLevelLayer::confirmClone(cocos2d::CCObject* sender) {
                 auto copyLevel = static_cast<MyGJGameLevel*>(GJGameLevel::create());
                 copyLevel->copyLevelInfo(level);
                 copyLevel->setLocal(true);
+				copyLevel->m_levelType = GJLevelType::Editor;
 
                 std::error_code err;
                 std::filesystem::create_directory(Mod::get()->getSaveDir() / "levels", err);
